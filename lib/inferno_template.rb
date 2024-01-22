@@ -1,5 +1,6 @@
 require_relative 'inferno_template/patient_group'
 require_relative 'inferno_template/patient_read_and_search_group'
+require_relative 'inferno_template/condition_read_and_search_group'
 
 module InfernoTemplate
   class Suite < Inferno::TestSuite
@@ -51,5 +52,6 @@ module InfernoTemplate
     # using their id
     group from: :patient_group
     group from: :patient_read_and_search_group
+    group from: :condition_read_and_search_group
   end
 end
