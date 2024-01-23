@@ -1,5 +1,9 @@
+require_relative 'utils'
+
 module InfernoTemplate
     class ConditionReadAndSearchGroup < Inferno::TestGroup
+        include Utils
+
         title 'Condition: Read and Search'
         description 'Source: https://confluence.hl7.org/pages/viewpage.action?pageId=203358353'
         id :condition_read_and_search_group
@@ -40,8 +44,11 @@ module InfernoTemplate
                     fhir_search(:condition, params: { _id: condition_id })
                     assert_response_status(200)
                     assert_resource_type(:bundle)
-                    assert resource.entry.first().resource.id == condition_id,
-                        "Requested resource with id #{condition_id}, received resource with id #{resource.entry.first().resource.id}"
+                    filtered_conditions = filter_conditions(extract_resources_from_bundle(resource), {
+                        id: condition_id,
+                    })
+                    assert filtered_conditions.length() > 0,
+                        "Number of results should be more than 0"
                 end
             end
         end
@@ -61,9 +68,11 @@ module InfernoTemplate
                     fhir_search(:condition, params: { patient: patient_id })
                     assert_response_status(200)
                     assert_resource_type(:bundle)
-                    assert resource.entry.length() > 0
-                    subject_id = resource.entry.first().resource.subject.reference.split('/').last()
-                    assert subject_id == patient_id, "Result subject ID #{subject_id} should be equal to #{patient_id}"
+                    filtered_conditions = filter_conditions(extract_resources_from_bundle(resource), {
+                        subject: patient_id,
+                    })
+                    assert filtered_conditions.length() > 0,
+                        "Number of results should be more than 0"
                 end
             end
         end
@@ -84,20 +93,17 @@ module InfernoTemplate
                 for search_param in search_param_arr do
                     patient_id = search_param["patient_id"]
                     category = search_param["category"]
-                    splitted_category = category.split('|')
 
                     fhir_search(:condition, params: { patient: patient_id, category: category })
 
                     assert_response_status(200)
                     assert_resource_type(:bundle)
-                    assert resource.entry.length() > 0
-                    result_patient_id = resource.entry.first().resource.subject.reference.split('/').last()
-                    assert result_patient_id == patient_id,
-                        "Requested resource with id #{result_patient_id}, received resource with id #{patient_id}"
-                    expected_category_code = splitted_category.length() == 2 ? splitted_category.last() : splitted_category.first()
-                    result_category = resource.entry.first().resource.category.first().coding.first()
-                    result_category_code = result_category.code
-                    assert result_category_code == expected_category_code, "Result category code #{result_category_code} should be equal to #{expected_category_code}"
+                    filtered_conditions = filter_conditions(extract_resources_from_bundle(resource), {
+                        subject: patient_id,
+                        category: category
+                    })
+                    assert filtered_conditions.length() > 0,
+                        "Number of results should be more than 0"
                 end
             end
         end
@@ -118,25 +124,22 @@ module InfernoTemplate
                 for search_param in search_param_arr do
                     patient_id = search_param["patient_id"]
                     clinical_status = search_param["clinical_status"]
-                    splitted_clinical_status = clinical_status.split('|')
 
                     fhir_search(:condition, params: { patient: patient_id, "clinical-status": clinical_status })
 
                     assert_response_status(200)
                     assert_resource_type(:bundle)
-                    assert resource.entry.length() > 0
-                    result_patient_id = resource.entry.first().resource.subject.reference.split('/').last()
-                    assert result_patient_id == patient_id,
-                        "Requested resource with id #{result_patient_id}, received resource with id #{patient_id}"
-                    expected_clinical_status = splitted_clinical_status.length() == 2 ? splitted_clinical_status.last() : splitted_clinical_status.first()
-                    result_clinical_status_code = resource.entry.first().resource.clinicalStatus.coding.first().code
-                    assert result_clinical_status_code == expected_clinical_status, "Result category code #{result_clinical_status_code} should be equal to #{expected_clinical_status}"
+                    filtered_conditions = filter_conditions(extract_resources_from_bundle(resource), {
+                        subject: patient_id,
+                        clinicalStatus: clinical_status
+                    })
+                    assert filtered_conditions.length() > 0,
+                        "Number of results should be more than 0"
                 end
             end
         end
 
         test do
-            # TODO Add assert for category and clinical status
             title 'SEARCH: patient+category+clinical-status'
             description %(
                 Find condition records using combination of patient parameter 'smith-emma' and category parameter 'problem-list-item' and clinical-status parameter 'active' \n
@@ -158,16 +161,18 @@ module InfernoTemplate
 
                     assert_response_status(200)
                     assert_resource_type(:bundle)
-                    assert resource.entry.length() > 0
-                    result_patient_id = resource.entry.first().resource.subject.reference.split('/').last()
-                    assert result_patient_id == patient_id,
-                        "Requested resource with id #{result_patient_id}, received resource with id #{patient_id}"
+                    filtered_conditions = filter_conditions(extract_resources_from_bundle(resource), {
+                        subject: patient_id,
+                        category: category,
+                        clinicalStatus: clinical_status
+                    })
+                    assert filtered_conditions.length() > 0,
+                        "Number of results should be more than 0"
                 end
             end
         end
 
         test do
-            # TODO Add assert for code
             title 'SEARCH: patient+code'
             description %(
                 Find condition records using combination of patient parameter 'wang-li' and code parameter 'http://snomed.info/sct%7C394659003' \n
@@ -188,10 +193,12 @@ module InfernoTemplate
 
                     assert_response_status(200)
                     assert_resource_type(:bundle)
-                    assert resource.entry.length() > 0
-                    result_patient_id = resource.entry.first().resource.subject.reference.split('/').last()
-                    assert result_patient_id == patient_id,
-                        "Requested resource with id #{result_patient_id}, received resource with id #{patient_id}"
+                    filtered_conditions = filter_conditions(extract_resources_from_bundle(resource), {
+                        subject: patient_id,
+                        code: code,
+                    })
+                    assert filtered_conditions.length() > 0,
+                        "Number of results should be more than 0"
                 end
             end
         end
@@ -209,10 +216,12 @@ module InfernoTemplate
                 fhir_search(:condition, params: { patient: patient_id, "onset-date": "ge" + onset_date_ge })
                 assert_response_status(200)
                 assert_resource_type(:bundle)
-                assert resource.entry.length() > 0
-                result_patient_id = resource.entry.first().resource.subject.reference.split('/').last()
-                assert result_patient_id == patient_id,
-                    "Requested resource with id #{result_patient_id}, received resource with id #{patient_id}"
+                filtered_conditions = filter_conditions(extract_resources_from_bundle(resource), {
+                    subject: patient_id,
+                    onSetDateTimeGE: onset_date_ge,
+                })
+                assert filtered_conditions.length() > 0,
+                    "Number of results should be more than 0"
             end
         end
 
@@ -225,10 +234,11 @@ module InfernoTemplate
 
             run do
                 patient_identifier = 'http://ns.electronichealth.net.au/id/hi/ihi/1.0|8003608833357361'
-                fhir_search(:condition, params: { "patient.identifier": patient_identifier,  })
+                fhir_search(:condition, params: { "patient.identifier": patient_identifier })
                 assert_response_status(200)
                 assert_resource_type(:bundle)
-                assert resource.entry.length() > 0
+                assert resource.entry.length() > 0,
+                    "Number of results should be more than 0"
             end
         end
     end

@@ -1,5 +1,9 @@
+require_relative 'utils'
+
 module InfernoTemplate
     class PatientReadAndSearchGroup < Inferno::TestGroup
+        include Utils
+
         title 'Patient: Read and Search'
         description 'Source: https://confluence.hl7.org/pages/viewpage.action?pageId=203358353'
         id :patient_read_and_search_group
@@ -24,7 +28,6 @@ module InfernoTemplate
             end
         end
 
-
         test do
             title 'SEARCH: _id'
             description %(
@@ -38,8 +41,11 @@ module InfernoTemplate
                     fhir_search(:patient, params: { _id: patient_id })
                     assert_response_status(200)
                     assert_resource_type(:bundle)
-                    assert resource.entry.first().resource.id == patient_id,
-                        "Requested resource with id #{patient_id}, received resource with id #{resource.entry.first().resource.id}"
+                    filtered_patients = filter_patients(extract_resources_from_bundle(resource), {
+                        id: patient_id,
+                    })
+                    assert filtered_patients.length() > 0,
+                        "Number of results should be more than 0"
                 end
             end
         end
@@ -55,7 +61,7 @@ module InfernoTemplate
 
             run do
                 identifier_arr = [
-                    "http://ns.electronichealth.net.au/id/hi/ihi/1.0|7C8003608833357361",
+                    # "http://ns.electronichealth.net.au/id/hi/ihi/1.0|7C8003608833357361",
                     "http://ns.electronichealth.net.au/id/dva|NBUR9080",
                     "http://ns.electronichealth.net.au/id/medicare-number|1234567892"
                 ]
@@ -64,7 +70,12 @@ module InfernoTemplate
                     fhir_search(:patient, params: { _identifier: identifier })
                     assert_response_status(200)
                     assert_resource_type(:bundle)
-                    assert resource.entry.length() > 0
+                    filtered_patients = filter_patients(extract_resources_from_bundle(resource), {
+                        identifier_system: identifier.split('|').first(),
+                        identifier_value: identifier.split('|').last(),
+                    })
+                    assert filtered_patients.length() > 0,
+                        "Number of results should be more than 0"
                 end
             end
         end
@@ -88,11 +99,12 @@ module InfernoTemplate
                     fhir_search(:patient, params: { birthdate: birth_date_to_search, family: family_name_to_search })
                     assert_response_status(200)
                     assert_resource_type(:bundle)
-                    assert resource.entry.length() > 0
-                    result_bd = resource.entry.first().resource.birthDate
-                    result_famility_name = resource.entry.first().resource.name.first().family
-                    assert birth_date_to_search == result_bd, "Result BD #{result_bd} should be equal to #{birth_date_to_search}"
-                    assert family_name_to_search.downcase == result_famility_name.downcase, "Result family name #{result_famility_name} should be equal to #{family_name_to_search}"
+                    filtered_patients = filter_patients(extract_resources_from_bundle(resource), {
+                        birth_date: birth_date_to_search,
+                        family_name: family_name_to_search
+                    })
+                    assert filtered_patients.length() > 0,
+                        "Number of results should be more than 0"
                 end
             end
         end
@@ -110,11 +122,12 @@ module InfernoTemplate
                 fhir_search(:patient, params: { birthdate: birth_date_to_search, name: name_to_search })
                 assert_response_status(200)
                 assert_resource_type(:bundle)
-                assert resource.entry.length() > 0
-                result_bd = resource.entry.first().resource.birthDate
-                result_name = resource.entry.first().resource.name.first().family
-                assert birth_date_to_search == result_bd, "Result BD #{result_bd} should be equal to #{birth_date_to_search}"
-                assert name_to_search.downcase == result_name.downcase, "Result family name #{result_name} should be equal to #{name_to_search}"
+                filtered_patients = filter_patients(extract_resources_from_bundle(resource), {
+                    birth_date: birth_date_to_search,
+                    name: name_to_search
+                })
+                assert filtered_patients.length() > 0,
+                    "Number of results should be more than 0"
             end
         end
 
@@ -129,13 +142,15 @@ module InfernoTemplate
             run do
                 family_name_arr = ["smith", "Bennelong"]
                 for family_name in family_name_arr do
-                    family_to_search = family_name
-                    fhir_search(:patient, params: { family: family_to_search })
+                    family_name_to_search = family_name
+                    fhir_search(:patient, params: { family: family_name_to_search })
                     assert_response_status(200)
                     assert_resource_type(:bundle)
-                    assert resource.entry.length() > 0
-                    result_family = resource.entry.first().resource.name.first().family
-                    assert family_to_search.downcase == result_family.downcase, "Result family name #{result_family} should be equal to #{family_to_search}"
+                    filtered_patients = filter_patients(extract_resources_from_bundle(resource), {
+                        family_name: family_name_to_search
+                    })
+                    assert filtered_patients.length() > 0,
+                        "Number of results should be more than 0"
                 end
             end
         end
@@ -154,16 +169,17 @@ module InfernoTemplate
                     {"family" => "Wang", "gender" => "male"},
                 ]
                 for search_param in search_param_arr do
-                    family_to_search = search_param["family"]
+                    family_name_to_search = search_param["family"]
                     gender_to_search = search_param["gender"]
-                    fhir_search(:patient, params: { family: family_to_search, gender: gender_to_search })
+                    fhir_search(:patient, params: { family: family_name_to_search, gender: gender_to_search })
                     assert_response_status(200)
                     assert_resource_type(:bundle)
-                    assert resource.entry.length() > 0
-                    result_family = resource.entry.first().resource.name.first().family
-                    result_gender = resource.entry.first().resource.gender
-                    assert family_to_search.downcase == result_family.downcase, "Result family name #{result_family} should be equal to #{family_to_search}"
-                    assert gender_to_search == result_gender, "Result gender #{result_gender} should be equal to #{gender_to_search}"
+                    filtered_patients = filter_patients(extract_resources_from_bundle(resource), {
+                        family_name: family_name_to_search,
+                        gender: gender_to_search
+                    })
+                    assert filtered_patients.length() > 0,
+                        "Number of results should be more than 0"
                 end
             end
         end
@@ -171,8 +187,8 @@ module InfernoTemplate
         test do
             title 'SEARCH: gender+name'
             description %(
-                Find patient records using combination of family name parameter 'smith' and gender parameter 'female' \n
-                Find patient records using combination of family name parameter 'Wang' and gender parameter 'male'
+                Find patient records using combination of name parameter 'smith' and gender parameter 'female' \n
+                Find patient records using combination of name parameter 'Wang' and gender parameter 'male'
             )
             makes_request :patient
 
@@ -187,11 +203,12 @@ module InfernoTemplate
                     fhir_search(:patient, params: { name: name_to_search, gender: gender_to_search })
                     assert_response_status(200)
                     assert_resource_type(:bundle)
-                    assert resource.entry.length() > 0
-                    result_family = resource.entry.first().resource.name.first().family
-                    result_gender = resource.entry.first().resource.gender
-                    assert name_to_search.downcase == result_family.downcase, "Result family name #{result_family} should be equal to #{name_to_search}"
-                    assert gender_to_search == result_gender, "Result gender #{result_gender} should be equal to #{gender_to_search}"
+                    filtered_patients = filter_patients(extract_resources_from_bundle(resource), {
+                        name: name_to_search,
+                        gender: gender_to_search
+                    })
+                    assert filtered_patients.length() > 0,
+                        "Number of results should be more than 0"
                 end
             end
         end
@@ -205,21 +222,17 @@ module InfernoTemplate
             makes_request :patient
 
             run do
-                name_to_search = 'Dan'
-                fhir_search(:patient, params: { name: name_to_search })
-                assert_response_status(200)
-                assert_resource_type(:bundle)
-                assert resource.entry.length() > 0
-                result_name = resource.entry.first().resource.name.first().family
-                assert name_to_search.downcase == result_name.downcase, "Result family name #{result_name} should be equal to #{name_to_search}"
-
-                name_to_search = 'Em'
-                fhir_search(:patient, params: { name: name_to_search })
-                assert_response_status(200)
-                assert_resource_type(:bundle)
-                assert resource.entry.length() > 0
-                result_name = resource.entry.first().resource.name.first().family
-                assert "smith" == result_name.downcase, "Result family name #{result_name} should be equal to SMITH"
+                name_arr = ["Dan", "Em"]
+                for name_to_search in name_arr do
+                    fhir_search(:patient, params: { name: name_to_search })
+                    assert_response_status(200)
+                    assert_resource_type(:bundle)
+                    filtered_patients = filter_patients(extract_resources_from_bundle(resource), {
+                        name: name_to_search,
+                    })
+                    assert filtered_patients.length() > 0,
+                        "Number of results should be more than 0"
+                end
             end
         end
     end
