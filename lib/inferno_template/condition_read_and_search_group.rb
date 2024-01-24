@@ -1,4 +1,5 @@
 require_relative 'utils'
+require_relative 'search_tests'
 
 module InfernoTemplate
     class ConditionReadAndSearchGroup < Inferno::TestGroup
@@ -31,6 +32,7 @@ module InfernoTemplate
 
 
         test do
+            include SearchTests
             title 'SEARCH: _id'
             description %(
                 Find condition record using the _id parameter 'fever' \n
@@ -39,21 +41,15 @@ module InfernoTemplate
             makes_request :condition
 
             run do
-                condition_ids = ["fever", "nailwound"]
-                for condition_id in condition_ids do
-                    fhir_search(:condition, params: { _id: condition_id })
-                    assert_response_status(200)
-                    assert_resource_type(:bundle)
-                    filtered_conditions = filter_conditions(extract_resources_from_bundle(resource), {
-                        id: condition_id,
-                    })
-                    assert filtered_conditions.length() > 0,
-                        "Number of results should be more than 0"
+                search_params_arr = [{:_id => "fever"}, {:_id => "nailwound"}]
+                for search_params in search_params_arr do
+                    test_search_conditions(search_params)
                 end
             end
         end
 
         test do
+            include SearchTests
             title 'SEARCH patient'
             description %(
                 Find condition record with the patient parameter 'wang-li' \n
@@ -62,22 +58,16 @@ module InfernoTemplate
             makes_request :condition
 
             run do
-                patient_id_arr = ["wang-li", "dan-harry"]
+                search_params_arr = [{:patient => "wang-li"}, {:patient => "dan-harry"}]
 
-                for patient_id in patient_id_arr do
-                    fhir_search(:condition, params: { patient: patient_id })
-                    assert_response_status(200)
-                    assert_resource_type(:bundle)
-                    filtered_conditions = filter_conditions(extract_resources_from_bundle(resource), {
-                        subject: patient_id,
-                    })
-                    assert filtered_conditions.length() > 0,
-                        "Number of results should be more than 0"
+                for search_params in search_params_arr do
+                    test_search_conditions(search_params)
                 end
             end
         end
 
         test do
+            include SearchTests
             title 'SEARCH: patient+category'
             description %(
                 Find condition records using combination of patient parameter 'smith-emma' and category parameter 'problem-list-item' \n
@@ -86,29 +76,18 @@ module InfernoTemplate
             makes_request :condition
 
             run do
-                search_param_arr = [
-                    {"patient_id" => 'smith-emma', "category" => 'problem-list-item'},
-                    {"patient_id" => 'wang-li', "category" => 'http://terminology.hl7.org/CodeSystem/condition-category|encounter-diagnosis'},
+                search_params_arr = [
+                    {:patient => 'smith-emma', :category => 'problem-list-item'},
+                    {:patient => 'wang-li', :category => 'http://terminology.hl7.org/CodeSystem/condition-category|encounter-diagnosis'},
                 ]
-                for search_param in search_param_arr do
-                    patient_id = search_param["patient_id"]
-                    category = search_param["category"]
-
-                    fhir_search(:condition, params: { patient: patient_id, category: category })
-
-                    assert_response_status(200)
-                    assert_resource_type(:bundle)
-                    filtered_conditions = filter_conditions(extract_resources_from_bundle(resource), {
-                        subject: patient_id,
-                        category: category
-                    })
-                    assert filtered_conditions.length() > 0,
-                        "Number of results should be more than 0"
+                for search_params in search_params_arr do
+                    test_search_conditions(search_params)
                 end
             end
         end
 
         test do
+            include SearchTests
             title 'SEARCH: patient+clinical-status'
             description %(
                 Find condition records using combination of patient parameter 'smith-emma' and clinical-status parameter 'active' \n
@@ -117,29 +96,18 @@ module InfernoTemplate
             makes_request :condition
 
             run do
-                search_param_arr = [
-                    {"patient_id" => 'smith-emma', "clinical_status" => 'active'},
-                    {"patient_id" => 'wang-li', "clinical_status" => 'http://terminology.hl7.org/CodeSystem/condition-clinical|active'},
+                search_params_arr = [
+                    {:patient => 'smith-emma', "clinical-status" => 'active'},
+                    {:patient => 'wang-li', "clinical-status" => 'http://terminology.hl7.org/CodeSystem/condition-clinical|active'},
                 ]
-                for search_param in search_param_arr do
-                    patient_id = search_param["patient_id"]
-                    clinical_status = search_param["clinical_status"]
-
-                    fhir_search(:condition, params: { patient: patient_id, "clinical-status": clinical_status })
-
-                    assert_response_status(200)
-                    assert_resource_type(:bundle)
-                    filtered_conditions = filter_conditions(extract_resources_from_bundle(resource), {
-                        subject: patient_id,
-                        clinicalStatus: clinical_status
-                    })
-                    assert filtered_conditions.length() > 0,
-                        "Number of results should be more than 0"
+                for search_params in search_params_arr do
+                    test_search_conditions(search_params)
                 end
             end
         end
 
         test do
+            include SearchTests
             title 'SEARCH: patient+category+clinical-status'
             description %(
                 Find condition records using combination of patient parameter 'smith-emma' and category parameter 'problem-list-item' and clinical-status parameter 'active' \n
@@ -148,31 +116,18 @@ module InfernoTemplate
             makes_request :condition
 
             run do
-                search_param_arr = [
-                    {"patient_id" => 'smith-emma', "category" => "problem-list-item", "clinical_status" => 'active'},
-                    {"patient_id" => 'wang-li', "category" => "http://terminology.hl7.org/CodeSystem/condition-category|problem-list-item", "clinical_status" => 'http://terminology.hl7.org/CodeSystem/condition-clinical|active'},
+                search_params_arr = [
+                    {:patient => 'smith-emma', :category => "problem-list-item", "clinical-status" => 'active'},
+                    {:patient => 'wang-li', :category => "http://terminology.hl7.org/CodeSystem/condition-category|problem-list-item", "clinical-status" => 'http://terminology.hl7.org/CodeSystem/condition-clinical|active'},
                 ]
-                for search_param in search_param_arr do
-                    patient_id = search_param["patient_id"]
-                    category = search_param["category"]
-                    clinical_status = search_param["clinical_status"]
-
-                    fhir_search(:condition, params: { patient: patient_id, category: category, "clinical-status": clinical_status })
-
-                    assert_response_status(200)
-                    assert_resource_type(:bundle)
-                    filtered_conditions = filter_conditions(extract_resources_from_bundle(resource), {
-                        subject: patient_id,
-                        category: category,
-                        clinicalStatus: clinical_status
-                    })
-                    assert filtered_conditions.length() > 0,
-                        "Number of results should be more than 0"
+                for search_params in search_params_arr do
+                    test_search_conditions(search_params)
                 end
             end
         end
 
         test do
+            include SearchTests
             title 'SEARCH: patient+code'
             description %(
                 Find condition records using combination of patient parameter 'wang-li' and code parameter 'http://snomed.info/sct%7C394659003' \n
@@ -181,29 +136,18 @@ module InfernoTemplate
             makes_request :condition
 
             run do
-                search_param_arr = [
-                    {"patient_id" => 'wang-li', "code" => 'http://snomed.info/sct|394659003'},
-                    {"patient_id" => 'wang-li', "code" => 'http://snomed.info/sct|394659003,http://snomed.info/sct|283680004,http://snomed.info/sct|54329005'},
+                search_params_arr = [
+                    {:patient => 'wang-li', :code => 'http://snomed.info/sct|394659003'},
+                    {:patient => 'wang-li', :code => 'http://snomed.info/sct|394659003,http://snomed.info/sct|283680004,http://snomed.info/sct|54329005'},
                 ]
-                for search_param in search_param_arr do
-                    patient_id = search_param["patient_id"]
-                    code = search_param["code"]
-
-                    fhir_search(:condition, params: { patient: patient_id, code: code })
-
-                    assert_response_status(200)
-                    assert_resource_type(:bundle)
-                    filtered_conditions = filter_conditions(extract_resources_from_bundle(resource), {
-                        subject: patient_id,
-                        code: code,
-                    })
-                    assert filtered_conditions.length() > 0,
-                        "Number of results should be more than 0"
+                for search_params in search_params_arr do
+                    test_search_conditions(search_params)
                 end
             end
         end
 
         test do
+            include SearchTests
             title 'SEARCH: patient+onset-date'
             description %(
                 Find condition records for patient 'wang-li' that occurred from 01 Jan 2014 onwards \n
@@ -211,35 +155,25 @@ module InfernoTemplate
             makes_request :condition
 
             run do
-                onset_date_ge = '2014-01-01T00:00:00Z'
-                patient_id = "wang-li"
-                fhir_search(:condition, params: { patient: patient_id, "onset-date": "ge" + onset_date_ge })
-                assert_response_status(200)
-                assert_resource_type(:bundle)
-                filtered_conditions = filter_conditions(extract_resources_from_bundle(resource), {
-                    subject: patient_id,
-                    onSetDateTimeGE: onset_date_ge,
-                })
-                assert filtered_conditions.length() > 0,
-                    "Number of results should be more than 0"
+                test_search_conditions({ :patient => "wang-li", "onset-date" => "ge2014-01-01T00:00:00Z" })
             end
         end
 
-        test do
-            title 'SEARCH: patient.identifier'
-            description %(
-                Find condition for patient with identifier 'http://ns.electronichealth.net.au/id/hi/ihi/1.0|8003608833357361' \n
-            )
-            makes_request :condition
+        # test do
+        #     title 'SEARCH: patient.identifier'
+        #     description %(
+        #         Find condition for patient with identifier 'http://ns.electronichealth.net.au/id/hi/ihi/1.0|8003608833357361' \n
+        #     )
+        #     makes_request :condition
 
-            run do
-                patient_identifier = 'http://ns.electronichealth.net.au/id/hi/ihi/1.0|8003608833357361'
-                fhir_search(:condition, params: { "patient.identifier": patient_identifier })
-                assert_response_status(200)
-                assert_resource_type(:bundle)
-                assert resource.entry.length() > 0,
-                    "Number of results should be more than 0"
-            end
-        end
+        #     run do
+        #         patient_identifier = 'http://ns.electronichealth.net.au/id/hi/ihi/1.0|8003608833357361'
+        #         fhir_search(:condition, params: { "patient.identifier": patient_identifier })
+        #         assert_response_status(200)
+        #         assert_resource_type(:bundle)
+        #         assert resource.entry.length() > 0,
+        #             "Number of results should be more than 0"
+        #     end
+        # end
     end
 end

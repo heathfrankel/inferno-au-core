@@ -1,4 +1,5 @@
 require_relative 'utils'
+require_relative 'search_tests'
 
 module InfernoTemplate
     class PatientReadAndSearchGroup < Inferno::TestGroup
@@ -29,6 +30,7 @@ module InfernoTemplate
         end
 
         test do
+            include SearchTests
             title 'SEARCH: _id'
             description %(
                 FHIR client searches the FHIR server for patients with a given id
@@ -36,21 +38,15 @@ module InfernoTemplate
             makes_request :patient
 
             run do
-                patient_ids = ["wang-li", "italia-sofia"]
-                for patient_id in patient_ids do
-                    fhir_search(:patient, params: { _id: patient_id })
-                    assert_response_status(200)
-                    assert_resource_type(:bundle)
-                    filtered_patients = filter_patients(extract_resources_from_bundle(resource), {
-                        id: patient_id,
-                    })
-                    assert filtered_patients.length() > 0,
-                        "Number of results should be more than 0"
+                search_params_arr = [{:_id => "wang-li"}, {:_id => "italia-sofia"}]
+                for search_params in search_params_arr do
+                    test_search_patients(search_params)
                 end
             end
         end
 
         test do
+            include SearchTests
             title 'SEARCH identifier'
             description %(
                 Find patient record using the identifier parameter "http://ns.electronichealth.net.au/id/hi/ihi/1.0|7C8003608833357361" \n
@@ -60,27 +56,20 @@ module InfernoTemplate
             makes_request :patient
 
             run do
-                identifier_arr = [
-                    # "http://ns.electronichealth.net.au/id/hi/ihi/1.0|7C8003608833357361",
-                    "http://ns.electronichealth.net.au/id/dva|NBUR9080",
-                    "http://ns.electronichealth.net.au/id/medicare-number|1234567892"
+                search_params_arr = [
+                    {:_identifier => "http://ns.electronichealth.net.au/id/hi/ihi/1.0|7C8003608833357361"},
+                    {:_identifier => "http://ns.electronichealth.net.au/id/dva|NBUR9080"},
+                    {:_identifier => "http://ns.electronichealth.net.au/id/medicare-number|1234567892"}
                 ]
 
-                for identifier in identifier_arr do
-                    fhir_search(:patient, params: { _identifier: identifier })
-                    assert_response_status(200)
-                    assert_resource_type(:bundle)
-                    filtered_patients = filter_patients(extract_resources_from_bundle(resource), {
-                        identifier_system: identifier.split('|').first(),
-                        identifier_value: identifier.split('|').last(),
-                    })
-                    assert filtered_patients.length() > 0,
-                        "Number of results should be more than 0"
+                for search_params in search_params_arr do
+                    test_search_patients(search_params)
                 end
             end
         end
 
         test do
+            include SearchTests
             title 'SEARCH: birthdate+family'
             description %(
                 Find patient records using combination of birthdate parameter '1999-12-19' and family name parameter 'smith' \n
@@ -89,27 +78,18 @@ module InfernoTemplate
             makes_request :patient
 
             run do
-                search_param_arr = [
-                    {"bd" => '1999-12-19', "family" => 'smith'},
-                    {"bd" => '1968-10-11', "family" => 'Bennelong'},
+                search_params_arr = [
+                    {:birthdate => '1999-12-19', :family => 'smith'},
+                    {:birthdate => '1968-10-11', :family => 'Bennelong'},
                 ]
-                for search_param in search_param_arr do
-                    birth_date_to_search = search_param["bd"]
-                    family_name_to_search = search_param["family"]
-                    fhir_search(:patient, params: { birthdate: birth_date_to_search, family: family_name_to_search })
-                    assert_response_status(200)
-                    assert_resource_type(:bundle)
-                    filtered_patients = filter_patients(extract_resources_from_bundle(resource), {
-                        birth_date: birth_date_to_search,
-                        family_name: family_name_to_search
-                    })
-                    assert filtered_patients.length() > 0,
-                        "Number of results should be more than 0"
+                for search_params in search_params_arr do
+                    test_search_patients(search_params)
                 end
             end
         end
 
         test do
+            include SearchTests
             title 'SEARCH: birthdate+name'
             description %(
                 Find patient records using combination of birthdate parameter '1939-08-25' and name parameter 'Dan'
@@ -117,21 +97,12 @@ module InfernoTemplate
             makes_request :patient
 
             run do
-                birth_date_to_search = '1939-08-25'
-                name_to_search = 'Dan'
-                fhir_search(:patient, params: { birthdate: birth_date_to_search, name: name_to_search })
-                assert_response_status(200)
-                assert_resource_type(:bundle)
-                filtered_patients = filter_patients(extract_resources_from_bundle(resource), {
-                    birth_date: birth_date_to_search,
-                    name: name_to_search
-                })
-                assert filtered_patients.length() > 0,
-                    "Number of results should be more than 0"
+                test_search_patients({ birthdate: '1939-08-25', name: 'Dan' })
             end
         end
 
         test do
+            include SearchTests
             title 'SEARCH: family'
             description %(
                 Find patient records using family name parameter 'smith' \n
@@ -140,22 +111,15 @@ module InfernoTemplate
             makes_request :patient
 
             run do
-                family_name_arr = ["smith", "Bennelong"]
-                for family_name in family_name_arr do
-                    family_name_to_search = family_name
-                    fhir_search(:patient, params: { family: family_name_to_search })
-                    assert_response_status(200)
-                    assert_resource_type(:bundle)
-                    filtered_patients = filter_patients(extract_resources_from_bundle(resource), {
-                        family_name: family_name_to_search
-                    })
-                    assert filtered_patients.length() > 0,
-                        "Number of results should be more than 0"
+                search_params_arr = [{:family => "smith"}, {:family => "Bennelong"}]
+                for search_params in search_params_arr do
+                    test_search_patients(search_params)
                 end
             end
         end
 
         test do
+            include SearchTests
             title 'SEARCH: family+gender'
             description %(
                 Find patient records using combination of family name parameter 'smith' and gender parameter 'female' \n
@@ -164,27 +128,18 @@ module InfernoTemplate
             makes_request :patient
 
             run do
-                search_param_arr = [
-                    {"family" => "smith", "gender" => "female"},
-                    {"family" => "Wang", "gender" => "male"},
+                search_params_arr = [
+                    {:family => "smith", :gender => "female"},
+                    {:family => "Wang", :gender => "male"},
                 ]
-                for search_param in search_param_arr do
-                    family_name_to_search = search_param["family"]
-                    gender_to_search = search_param["gender"]
-                    fhir_search(:patient, params: { family: family_name_to_search, gender: gender_to_search })
-                    assert_response_status(200)
-                    assert_resource_type(:bundle)
-                    filtered_patients = filter_patients(extract_resources_from_bundle(resource), {
-                        family_name: family_name_to_search,
-                        gender: gender_to_search
-                    })
-                    assert filtered_patients.length() > 0,
-                        "Number of results should be more than 0"
+                for search_params in search_params_arr do
+                    test_search_patients(search_params)
                 end
             end
         end
 
         test do
+            include SearchTests
             title 'SEARCH: gender+name'
             description %(
                 Find patient records using combination of name parameter 'smith' and gender parameter 'female' \n
@@ -193,27 +148,18 @@ module InfernoTemplate
             makes_request :patient
 
             run do
-                search_param_arr = [
-                    {"name" => "smith", "gender" => "female"},
-                    {"name" => "Wang", "gender" => "male"},
+                search_params_arr = [
+                    {:name => "smith", :gender => "female"},
+                    {:name => "Wang", :gender => "male"},
                 ]
-                for search_param in search_param_arr do
-                    name_to_search = search_param["name"]
-                    gender_to_search = search_param["gender"]
-                    fhir_search(:patient, params: { name: name_to_search, gender: gender_to_search })
-                    assert_response_status(200)
-                    assert_resource_type(:bundle)
-                    filtered_patients = filter_patients(extract_resources_from_bundle(resource), {
-                        name: name_to_search,
-                        gender: gender_to_search
-                    })
-                    assert filtered_patients.length() > 0,
-                        "Number of results should be more than 0"
+                for search_params in search_params_arr do
+                    test_search_patients(search_params)
                 end
             end
         end
 
         test do
+            include SearchTests
             title 'SEARCH: name'
             description %(
                 Find patient records using name parameter 'Dan' \n
@@ -222,16 +168,12 @@ module InfernoTemplate
             makes_request :patient
 
             run do
-                name_arr = ["Dan", "Em"]
-                for name_to_search in name_arr do
-                    fhir_search(:patient, params: { name: name_to_search })
-                    assert_response_status(200)
-                    assert_resource_type(:bundle)
-                    filtered_patients = filter_patients(extract_resources_from_bundle(resource), {
-                        name: name_to_search,
-                    })
-                    assert filtered_patients.length() > 0,
-                        "Number of results should be more than 0"
+                search_params_arr = [
+                    {:name => "Dan"},
+                    {:name => "Em"},
+                ]
+                for search_params in search_params_arr do
+                    test_search_patients(search_params)
                 end
             end
         end

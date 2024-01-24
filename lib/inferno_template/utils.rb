@@ -10,11 +10,13 @@ module InfernoTemplate
             patients.select do |patient|
                 criteria.all? do |key, value|
                     case key
-                    when :id
+                    when :_id
                         patient.id == value
-                    when :identifier_system, :identifier_value
-                        patient.identifier.any? { |identifier| identifier.send(key.to_s.split('_').last()) == value }
-                    when :family_name
+                    when :_identifier
+                        patient.identifier.any? { |identifier_item| match_identifier(identifier_item, value) }
+                    # when :identifier_system, :identifier_value
+                    #     patient.identifier.any? { |identifier| identifier.send(key.to_s.split('_').last()) == value }
+                    when :family
                         patient.name.any? { |name| name.family.downcase == value.downcase }
                     when :name
                         patient.name.any? do |name|
@@ -22,7 +24,7 @@ module InfernoTemplate
                                 name_part.downcase.include?(value.downcase)
                             end
                         end
-                    when :birth_date
+                    when :birthdate
                         patient.birthDate == value
                     when :gender
                         patient.gender == value
@@ -37,15 +39,21 @@ module InfernoTemplate
             conditions.select do |condition|
                 criteria.all? do |key, value|
                     case key
-                    when :id
+                    when :_id
                         condition.id == value
-                    when :subject
+                    when :patient
                         condition.subject.reference.split('/').last == value
-                    when :clinicalStatus, :code
-                        match_codeable_concept(condition.send(key), value)
+                    when "clinical-status", :code
+                        case key
+                        when "clinical-status"
+                            match_codeable_concept(condition.clinicalStatus, value)
+                        else
+                            match_codeable_concept(condition.send(key), value)
+                        end
                     when :category
                         condition.category.any? { |category_item| match_codeable_concept(category_item, value) }
-                    when :onSetDateTimeGE
+                    when "onset-date"
+                        # gt / lt / ge / le
                         string_to_datetime(condition.onsetDateTime) >= string_to_datetime(value)
                     else
                         raise ArgumentError, "Unknown filter key: #{key}"
@@ -63,6 +71,19 @@ module InfernoTemplate
                     codeable_concept.coding.any? { |coding| coding.system == system && coding.code == code }
                 else
                     codeable_concept.coding.any? { |coding| coding.code == criteria }
+                end
+            end
+        end
+
+        def match_identifier(identifier_item, criteria_value)
+            criteria_values = criteria_value.split(',')
+
+            criteria_values.any? do |criteria|
+                if criteria.include?('|')
+                    system, value = criteria.split('|')
+                    identifier_item.system == system && identifier_item.value == value
+                else
+                    identifier_item.value == criteria
                 end
             end
         end
