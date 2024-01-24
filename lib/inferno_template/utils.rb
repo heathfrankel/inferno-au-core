@@ -2,11 +2,11 @@ require 'date'
 
 module InfernoTemplate
     module Utils
-        def extract_resources_from_bundle(bundle)
+        def extract_resources_from_bundle bundle
             bundle.entry.map { |entr| entr.resource }
         end
 
-        def filter_patients(patients, criteria)
+        def filter_patients patients, criteria
             patients.select do |patient|
                 criteria.all? do |key, value|
                     case key
@@ -33,7 +33,7 @@ module InfernoTemplate
             end
         end
 
-        def filter_conditions(conditions, criteria)
+        def filter_conditions conditions, criteria
             conditions.select do |condition|
                 criteria.all? do |key, value|
                     case key
@@ -44,12 +44,12 @@ module InfernoTemplate
                     when "clinical-status", :code
                         case key
                         when "clinical-status"
-                            match_codeable_concept(condition.clinicalStatus, value)
+                            match_codeable_concept condition.clinicalStatus, value
                         else
-                            match_codeable_concept(condition.send(key), value)
+                            match_codeable_concept condition.send(key), value
                         end
                     when :category
-                        condition.category.any? { |category_item| match_codeable_concept(category_item, value) }
+                        condition.category.any? { |category_item| match_codeable_concept category_item, value }
                     when "onset-date"
                         # gt / lt / ge / le
                         string_to_datetime(condition.onsetDateTime) >= string_to_datetime(value)
@@ -60,7 +60,7 @@ module InfernoTemplate
             end
         end
 
-        def match_codeable_concept(codeable_concept, criteria_value)
+        def match_codeable_concept codeable_concept, criteria_value
             criteria_values = criteria_value.split(',')
 
             criteria_values.any? do |criteria|
@@ -73,7 +73,7 @@ module InfernoTemplate
             end
         end
 
-        def match_identifier(identifier_item, criteria_value)
+        def match_identifier identifier_item, criteria_value
             criteria_values = criteria_value.split(',')
 
             criteria_values.any? do |criteria|
@@ -86,12 +86,12 @@ module InfernoTemplate
             end
         end
 
-        def string_to_datetime(datetime_string)
-            if datetime_string.length() == 4
+        def string_to_datetime datetime_string
+            if datetime_string.length == 4
                 datetime_string = "#{datetime_string}-01-01T00:00:00Z"
             end
 
-            DateTime.parse(datetime_string)
+            DateTime.parse datetime_string
         end
 
     end
