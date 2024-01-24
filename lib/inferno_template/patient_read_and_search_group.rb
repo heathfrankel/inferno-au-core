@@ -1,5 +1,6 @@
 require_relative 'utils'
 require_relative 'search_tests'
+require_relative 'read_tests'
 
 module InfernoTemplate
     class PatientReadAndSearchGroup < Inferno::TestGroup
@@ -10,20 +11,14 @@ module InfernoTemplate
         id :patient_read_and_search_group
 
         test do
+            include ReadTests
             title 'READ'
             description %(
                 FHIR client retrieves the patient resource with the Id.
             )
 
             run do
-                patient_ids = ["wang-li", "italia-sofia"]
-                for patient_id in patient_ids do
-                    fhir_read(:patient, patient_id, name: :patient)
-                    assert_response_status(200)
-                    assert_resource_type(:patient)
-                    assert resource.id == patient_id,
-                            "Requested resource with id #{patient_id}, received resource with id #{resource.id}"
-                end
+                ["wang-li", "italia-sofia"].each { |patient_id| test_read_resources :patient, patient_id }
             end
         end
 

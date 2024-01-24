@@ -1,5 +1,6 @@
 require_relative 'utils'
 require_relative 'search_tests'
+require_relative 'read_tests'
 
 module InfernoTemplate
     class ConditionReadAndSearchGroup < Inferno::TestGroup
@@ -10,6 +11,7 @@ module InfernoTemplate
         id :condition_read_and_search_group
 
         test do
+            include ReadTests
             title 'READ'
             description %(
                 Find condition record using the id parameter 'fever' \n
@@ -19,14 +21,7 @@ module InfernoTemplate
             makes_request :condition
 
             run do
-                condition_ids = ["fever", "nailwound"]
-                for condition_id in condition_ids do
-                    fhir_read(:condition, condition_id, name: :condition)
-                    assert_response_status(200)
-                    assert_resource_type(:condition)
-                    assert resource.id == condition_id,
-                        "Requested resource with id #{condition_id}, received resource with id #{resource.id}"
-                end
+                ["fever", "nailwound"].each { |condition_id| test_read_resources :condition, condition_id }
             end
         end
 
