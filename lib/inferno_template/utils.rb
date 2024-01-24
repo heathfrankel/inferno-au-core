@@ -6,6 +6,28 @@ module InfernoTemplate
             bundle.entry.map { |entr| entr.resource }
         end
 
+        def filter_allergy_intolerance allergies, criteria
+            allergies.select do |allergy|
+                criteria.all? do |key, value|
+                    case key
+                    when :_id
+                        allergy.id == value
+                    when :patient
+                        allergy.patient.reference.split('/').last == value
+                    when "clinical-status"
+                        case key
+                        when "clinical-status"
+                            match_codeable_concept allergy.clinicalStatus, value
+                        else
+                            match_codeable_concept allergy.send(key), value
+                        end
+                    else
+                        raise ArgumentError, "Unknown filter key: #{key}"
+                    end
+                end
+            end
+        end
+
         def filter_patients patients, criteria
             patients.select do |patient|
                 criteria.all? do |key, value|

@@ -18,6 +18,8 @@ module InfernoTemplate
                 filter_conditions resources, search_params
             when :patient
                 filter_patients resources, search_params
+            when :allergyIntolerance
+                filter_allergy_intolerance resources, search_params
             else
                 raise ArgumentError, "Unknown filter resourceType: #{resource_type}"
             end
