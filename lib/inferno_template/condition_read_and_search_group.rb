@@ -38,13 +38,12 @@ module InfernoTemplate
                 Find condition record using the _id parameter 'fever' \n
                 Find patient record using the _id parameter 'nailwound'
             )
-            makes_request :condition
 
             run do
-                search_params_arr = [{:_id => "fever"}, {:_id => "nailwound"}]
-                for search_params in search_params_arr do
-                    test_search_conditions(search_params)
-                end
+                [
+                    {:_id => "fever"},
+                    {:_id => "nailwound"}
+                ].each { |search_params| test_search_resources :condition, search_params }
             end
         end
 
@@ -55,14 +54,12 @@ module InfernoTemplate
                 Find condition record with the patient parameter 'wang-li' \n
                 Find condition record with the patient parameter 'dan-harry'
             )
-            makes_request :condition
 
             run do
-                search_params_arr = [{:patient => "wang-li"}, {:patient => "dan-harry"}]
-
-                for search_params in search_params_arr do
-                    test_search_conditions(search_params)
-                end
+                [
+                    {:patient => "wang-li"},
+                    {:patient => "dan-harry"}
+                ].each { |search_params| test_search_resources :condition, search_params }
             end
         end
 
@@ -73,16 +70,12 @@ module InfernoTemplate
                 Find condition records using combination of patient parameter 'smith-emma' and category parameter 'problem-list-item' \n
                 Find condition records using combination of patient parameter 'wang-li' and category parameter 'http://terminology.hl7.org/CodeSystem/condition-category|encounter-diagnosis'
             )
-            makes_request :condition
 
             run do
-                search_params_arr = [
+                [
                     {:patient => 'smith-emma', :category => 'problem-list-item'},
                     {:patient => 'wang-li', :category => 'http://terminology.hl7.org/CodeSystem/condition-category|encounter-diagnosis'},
-                ]
-                for search_params in search_params_arr do
-                    test_search_conditions(search_params)
-                end
+                ].each { |search_params| test_search_resources :condition, search_params }
             end
         end
 
@@ -93,16 +86,12 @@ module InfernoTemplate
                 Find condition records using combination of patient parameter 'smith-emma' and clinical-status parameter 'active' \n
                 Find condition records using combination of patient parameter 'wang-li' and clinical-status parameter 'http://terminology.hl7.org/CodeSystem/condition-clinical|active'
             )
-            makes_request :condition
 
             run do
-                search_params_arr = [
+                [
                     {:patient => 'smith-emma', "clinical-status" => 'active'},
                     {:patient => 'wang-li', "clinical-status" => 'http://terminology.hl7.org/CodeSystem/condition-clinical|active'},
-                ]
-                for search_params in search_params_arr do
-                    test_search_conditions(search_params)
-                end
+                ].each { |search_params| test_search_resources :condition, search_params }
             end
         end
 
@@ -113,16 +102,12 @@ module InfernoTemplate
                 Find condition records using combination of patient parameter 'smith-emma' and category parameter 'problem-list-item' and clinical-status parameter 'active' \n
                 Find condition records using combination of patient parameter 'wang-li' and category parameter 'http://terminology.hl7.org/CodeSystem/condition-category|problem-list-item' and clinical-status parameter 'http://terminology.hl7.org/CodeSystem/condition-clinical|active'
             )
-            makes_request :condition
 
             run do
-                search_params_arr = [
+                [
                     {:patient => 'smith-emma', :category => "problem-list-item", "clinical-status" => 'active'},
                     {:patient => 'wang-li', :category => "http://terminology.hl7.org/CodeSystem/condition-category|problem-list-item", "clinical-status" => 'http://terminology.hl7.org/CodeSystem/condition-clinical|active'},
-                ]
-                for search_params in search_params_arr do
-                    test_search_conditions(search_params)
-                end
+                ].each { |search_params| test_search_resources :condition, search_params }
             end
         end
 
@@ -133,16 +118,12 @@ module InfernoTemplate
                 Find condition records using combination of patient parameter 'wang-li' and code parameter 'http://snomed.info/sct%7C394659003' \n
                 Find condition records using combination of patient parameter 'wang-li' and one of the following code parameters: 'http://snomed.info/sct%7C283680004', 'http://snomed.info/sct%7C394659003', and 'http://snomed.info/sct%7C54329005'
             )
-            makes_request :condition
 
             run do
-                search_params_arr = [
+                [
                     {:patient => 'wang-li', :code => 'http://snomed.info/sct|394659003'},
                     {:patient => 'wang-li', :code => 'http://snomed.info/sct|394659003,http://snomed.info/sct|283680004,http://snomed.info/sct|54329005'},
-                ]
-                for search_params in search_params_arr do
-                    test_search_conditions(search_params)
-                end
+                ].each { |search_params| test_search_resources :condition, search_params }
             end
         end
 
@@ -155,7 +136,7 @@ module InfernoTemplate
             makes_request :condition
 
             run do
-                test_search_conditions({ :patient => "wang-li", "onset-date" => "ge2014-01-01T00:00:00Z" })
+                test_search_resources :condition, { :patient => "wang-li", "onset-date" => "ge2014-01-01T00:00:00Z" }
             end
         end
 

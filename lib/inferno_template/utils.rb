@@ -14,8 +14,6 @@ module InfernoTemplate
                         patient.id == value
                     when :_identifier
                         patient.identifier.any? { |identifier_item| match_identifier(identifier_item, value) }
-                    # when :identifier_system, :identifier_value
-                    #     patient.identifier.any? { |identifier| identifier.send(key.to_s.split('_').last()) == value }
                     when :family
                         patient.name.any? { |name| name.family.downcase == value.downcase }
                     when :name

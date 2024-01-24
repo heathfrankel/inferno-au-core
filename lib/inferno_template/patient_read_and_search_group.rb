@@ -15,8 +15,6 @@ module InfernoTemplate
                 FHIR client retrieves the patient resource with the Id.
             )
 
-            makes_request :patient
-
             run do
                 patient_ids = ["wang-li", "italia-sofia"]
                 for patient_id in patient_ids do
@@ -35,13 +33,12 @@ module InfernoTemplate
             description %(
                 FHIR client searches the FHIR server for patients with a given id
             )
-            makes_request :patient
 
             run do
-                search_params_arr = [{:_id => "wang-li"}, {:_id => "italia-sofia"}]
-                for search_params in search_params_arr do
-                    test_search_patients(search_params)
-                end
+                [
+                    {:_id => "wang-li"},
+                    {:_id => "italia-sofia"}
+                ].each { |search_params| test_search_resources :patient, search_params }
             end
         end
 
@@ -53,18 +50,13 @@ module InfernoTemplate
                 Find patient record using the identifier parameter "http://ns.electronichealth.net.au/id/dva|NBUR9080" \n
                 Find patient record using the identifier parameter "http://ns.electronichealth.net.au/id/medicare-number|1234567892
             )
-            makes_request :patient
 
             run do
-                search_params_arr = [
+                [
                     {:_identifier => "http://ns.electronichealth.net.au/id/hi/ihi/1.0|7C8003608833357361"},
                     {:_identifier => "http://ns.electronichealth.net.au/id/dva|NBUR9080"},
                     {:_identifier => "http://ns.electronichealth.net.au/id/medicare-number|1234567892"}
-                ]
-
-                for search_params in search_params_arr do
-                    test_search_patients(search_params)
-                end
+                ].each { |search_params| test_search_resources :patient, search_params }
             end
         end
 
@@ -75,16 +67,12 @@ module InfernoTemplate
                 Find patient records using combination of birthdate parameter '1999-12-19' and family name parameter 'smith' \n
                 Find patient records using combination of birthdate parameter '1968-10-11' and family name parameter 'Bennelong'
             )
-            makes_request :patient
 
             run do
-                search_params_arr = [
+                [
                     {:birthdate => '1999-12-19', :family => 'smith'},
                     {:birthdate => '1968-10-11', :family => 'Bennelong'},
-                ]
-                for search_params in search_params_arr do
-                    test_search_patients(search_params)
-                end
+                ].each { |search_params| test_search_resources :patient, search_params }
             end
         end
 
@@ -94,10 +82,9 @@ module InfernoTemplate
             description %(
                 Find patient records using combination of birthdate parameter '1939-08-25' and name parameter 'Dan'
             )
-            makes_request :patient
 
             run do
-                test_search_patients({ birthdate: '1939-08-25', name: 'Dan' })
+                test_search_resources :patient, { birthdate: '1939-08-25', name: 'Dan' }
             end
         end
 
@@ -108,13 +95,12 @@ module InfernoTemplate
                 Find patient records using family name parameter 'smith' \n
                 Find patient records using family name parameter 'Bennelong'
             )
-            makes_request :patient
 
             run do
-                search_params_arr = [{:family => "smith"}, {:family => "Bennelong"}]
-                for search_params in search_params_arr do
-                    test_search_patients(search_params)
-                end
+                [
+                    {:family => "smith"},
+                    {:family => "Bennelong"}
+                ].each { |search_params| test_search_resources :patient, search_params }
             end
         end
 
@@ -125,16 +111,12 @@ module InfernoTemplate
                 Find patient records using combination of family name parameter 'smith' and gender parameter 'female' \n
                 Find patient records using combination of family name parameter 'Wang' and gender parameter 'male'
             )
-            makes_request :patient
 
             run do
-                search_params_arr = [
+                [
                     {:family => "smith", :gender => "female"},
                     {:family => "Wang", :gender => "male"},
-                ]
-                for search_params in search_params_arr do
-                    test_search_patients(search_params)
-                end
+                ].each { |search_params| test_search_resources :patient, search_params }
             end
         end
 
@@ -145,16 +127,12 @@ module InfernoTemplate
                 Find patient records using combination of name parameter 'smith' and gender parameter 'female' \n
                 Find patient records using combination of name parameter 'Wang' and gender parameter 'male'
             )
-            makes_request :patient
 
             run do
-                search_params_arr = [
+                [
                     {:name => "smith", :gender => "female"},
                     {:name => "Wang", :gender => "male"},
-                ]
-                for search_params in search_params_arr do
-                    test_search_patients(search_params)
-                end
+                ].each { |search_params| test_search_resources :patient, search_params }
             end
         end
 
@@ -165,16 +143,12 @@ module InfernoTemplate
                 Find patient records using name parameter 'Dan' \n
                 Find patient records using name parameter 'Em'
             )
-            makes_request :patient
 
             run do
-                search_params_arr = [
+                [
                     {:name => "Dan"},
                     {:name => "Em"},
-                ]
-                for search_params in search_params_arr do
-                    test_search_patients(search_params)
-                end
+                ].each { |search_params| test_search_resources :patient, search_params }
             end
         end
     end
