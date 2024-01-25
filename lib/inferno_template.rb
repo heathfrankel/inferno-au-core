@@ -1,4 +1,7 @@
 require_relative 'inferno_template/patient_group'
+require_relative 'inferno_template/patient_read_and_search_group'
+require_relative 'inferno_template/condition_read_and_search_group'
+require_relative 'inferno_template/allergy_intolerance_read_and_search_group'
 
 module InfernoTemplate
   class Suite < Inferno::TestSuite
@@ -49,5 +52,8 @@ module InfernoTemplate
     # Tests and TestGroups can be written in separate files and then included
     # using their id
     group from: :patient_group
+    group from: :patient_read_and_search_group
+    group from: :condition_read_and_search_group
+    group from: :allergy_intolerance_read_and_search_group
   end
 end
