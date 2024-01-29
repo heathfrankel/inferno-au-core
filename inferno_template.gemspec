@@ -1,5 +1,5 @@
 Gem::Specification.new do |spec|
-  spec.name          = 'inferno_template'
+  spec.name          = 'au_core_test_kit'
   spec.version       = '0.0.1'
   spec.authors       = ['Inferno Team']
   spec.email         = ['inferno@groups.mitre.org']

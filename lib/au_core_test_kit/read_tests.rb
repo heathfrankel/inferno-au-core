@@ -1,4 +1,4 @@
-module InfernoTemplate
+module AUCoreTestKit
     module ReadTests
         def test_read_resources resource_type, id
             fhir_read resource_type, id

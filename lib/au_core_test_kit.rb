@@ -1,9 +1,9 @@
-require_relative 'inferno_template/patient_group'
-require_relative 'inferno_template/patient_read_and_search_group'
-require_relative 'inferno_template/condition_read_and_search_group'
-require_relative 'inferno_template/allergy_intolerance_read_and_search_group'
+require_relative 'au_core_test_kit/patient_group'
+require_relative 'au_core_test_kit/patient_read_and_search_group'
+require_relative 'au_core_test_kit/condition_read_and_search_group'
+require_relative 'au_core_test_kit/allergy_intolerance_read_and_search_group'
 
-module InfernoTemplate
+module AUCoreTestKit
   class Suite < Inferno::TestSuite
     id :test_suite_template
     title 'Inferno Test Suite Template'

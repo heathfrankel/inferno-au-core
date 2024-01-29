@@ -1,4 +1,4 @@
-module InfernoTemplate
+module AUCoreTestKit
     module SearchTests
         def test_search_resources resource_type, search_params
             fhir_search resource_type, params: search_params

@@ -1,6 +1,6 @@
 require 'date'
 
-module InfernoTemplate
+module AUCoreTestKit
     module Utils
         def extract_resources_from_bundle bundle
             bundle.entry.map { |entr| entr.resource }

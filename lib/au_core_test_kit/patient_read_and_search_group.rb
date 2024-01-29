@@ -2,7 +2,7 @@ require_relative 'utils'
 require_relative 'search_tests'
 require_relative 'read_tests'
 
-module InfernoTemplate
+module AUCoreTestKit
     class PatientReadAndSearchGroup < Inferno::TestGroup
         include Utils
 

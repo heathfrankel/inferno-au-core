@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    inferno_template (0.0.1)
+    au_core_test_kit (0.0.1)
       inferno_core (~> 0.4.4)
 
 GEM
@@ -294,7 +294,7 @@ DEPENDENCIES
   database_cleaner-sequel (~> 1.8)
   debug
   factory_bot (~> 6.1)
-  inferno_template!
+  au_core_test_kit!
   rspec (~> 3.10)
   webmock (~> 3.11)
 
