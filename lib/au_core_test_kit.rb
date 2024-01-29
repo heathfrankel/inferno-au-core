@@ -1,59 +1,61 @@
-require_relative 'au_core_test_kit/patient_group'
-require_relative 'au_core_test_kit/patient_read_and_search_group'
-require_relative 'au_core_test_kit/condition_read_and_search_group'
-require_relative 'au_core_test_kit/allergy_intolerance_read_and_search_group'
+require_relative 'au_core_test_kit/generated/v0.3.0/au_core_test_suite'
 
-module AUCoreTestKit
-  class Suite < Inferno::TestSuite
-    id :test_suite_template
-    title 'Inferno Test Suite Template'
-    description 'A basic test suite template for Inferno'
+# require_relative 'au_core_test_kit/patient_group'
+# require_relative 'au_core_test_kit/patient_read_and_search_group'
+# require_relative 'au_core_test_kit/condition_read_and_search_group'
+# require_relative 'au_core_test_kit/allergy_intolerance_read_and_search_group'
 
-    # These inputs will be available to all tests in this suite
-    input :url,
-          title: 'FHIR Server Base Url'
+# module AUCoreTestKit
+#   class Suite < Inferno::TestSuite
+#     id :test_suite_template
+#     title 'Inferno Test Suite Template'
+#     description 'A basic test suite template for Inferno'
 
-    input :credentials,
-          title: 'OAuth Credentials',
-          type: :oauth_credentials,
-          optional: true
+#     # These inputs will be available to all tests in this suite
+#     input :url,
+#           title: 'FHIR Server Base Url'
 
-    # All FHIR requests in this suite will use this FHIR client
-    fhir_client do
-      url :url
-      oauth_credentials :credentials
-    end
+#     input :credentials,
+#           title: 'OAuth Credentials',
+#           type: :oauth_credentials,
+#           optional: true
 
-    # All FHIR validation requsets will use this FHIR validator
-    validator do
-      url ENV.fetch('VALIDATOR_URL')
-    end
+#     # All FHIR requests in this suite will use this FHIR client
+#     fhir_client do
+#       url :url
+#       oauth_credentials :credentials
+#     end
 
-    # Tests and TestGroups can be defined inline
-    group do
-      id :capability_statement
-      title 'Capability Statement'
-      description 'Verify that the server has a CapabilityStatement'
+#     # All FHIR validation requsets will use this FHIR validator
+#     validator do
+#       url ENV.fetch('VALIDATOR_URL')
+#     end
 
-      test do
-        id :capability_statement_read
-        title 'Read CapabilityStatement'
-        description 'Read CapabilityStatement from /metadata endpoint'
+#     # Tests and TestGroups can be defined inline
+#     group do
+#       id :capability_statement
+#       title 'Capability Statement'
+#       description 'Verify that the server has a CapabilityStatement'
 
-        run do
-          fhir_get_capability_statement
+#       test do
+#         id :capability_statement_read
+#         title 'Read CapabilityStatement'
+#         description 'Read CapabilityStatement from /metadata endpoint'
 
-          assert_response_status(200)
-          assert_resource_type(:capability_statement)
-        end
-      end
-    end
+#         run do
+#           fhir_get_capability_statement
 
-    # Tests and TestGroups can be written in separate files and then included
-    # using their id
-    group from: :patient_group
-    group from: :patient_read_and_search_group
-    group from: :condition_read_and_search_group
-    group from: :allergy_intolerance_read_and_search_group
-  end
-end
+#           assert_response_status(200)
+#           assert_resource_type(:capability_statement)
+#         end
+#       end
+#     end
+
+#     # Tests and TestGroups can be written in separate files and then included
+#     # using their id
+#     group from: :patient_group
+#     group from: :patient_read_and_search_group
+#     group from: :condition_read_and_search_group
+#     group from: :allergy_intolerance_read_and_search_group
+#   end
+# end

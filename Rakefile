@@ -13,3 +13,12 @@ namespace :db do
     Inferno::Utils::Migration.new.run
   end
 end
+
+namespace :au_core do
+  desc 'Generate tests'
+  task :generate do
+    require_relative 'lib/au_core_test_kit/generator'
+
+    AUCoreTestKit::Generator.generate
+  end
+end
